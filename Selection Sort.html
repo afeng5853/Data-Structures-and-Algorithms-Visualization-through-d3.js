@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <style>
-        svg
-        {
+        svg {
             border-style: solid;
         }
 
-        g > circle
-        {
+        g>circle {
             stroke: black;
             cursor: move;
             cursor: grab;
@@ -16,15 +15,13 @@
             cursor: -webkit-grab;
         }
 
-        g > circle:active
-        {
+        g>circle:active {
             cursor: grabbing;
             cursor: -moz-grabbing;
             cursor: -webkit-grabbing;
         }
 
-        g > circle + text
-        {
+        g>circle+text {
             font-family: sans-serif;
             cursor: move;
             cursor: grab;
@@ -35,236 +32,38 @@
             -ms-user-select: none;
         }
 
-        g > text:active
-        {
+        g>text:active {
             cursor: grabbing;
             cursor: -moz-grabbing;
             cursor: -webkit-grabbing;
         }
 
-        g > rect
-        {
+        g>rect {
             fill: white;
             stroke: black;
             stroke-width: 10px;
         }
 
-        .actionButton
-        {
+        .actionButton {
             cursor: pointer;
         }
 
-        .actionButton + text
-        {
+        .actionButton+text {
             font-family: sans-serif;
             cursor: pointer;
         }
 
-        .dragging
-        {
+        .dragging {
             stroke-width: 7px;
         }
-
     </style>
-    <script src = "https://cdnjs.cloudflare.com/ajax/libs/d3/4.9.1/d3.min.js" ></script>
-    <script
-            src="https://code.jquery.com/jquery-3.2.1.min.js"
-            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-            crossorigin="anonymous"></script>
-    <script>
-        class Node
-        {
-            constructor(x, y, r, value)
-            {
-                this.x = x;
-                this.y = y;
-                this.r = r;
-                this.value = value;
-            }
-        }
-
-        class GraphicArray
-        {
-            constructor()
-            {
-                let array = [];
-                this.getArray = function() { return array; };
-
-                let gElements = [];
-                this.getGElements = function() { return gElements; };
-            }
-
-            iterate()
-            {
-                let interval = setInterval(visitNextNode, 1000);
-                let prevNode = gArray.getArray()[0].selectAll("circle");
-                let prevColor = prevNode.attr("fill");
-                prevNode.attr("fill", "red");
-                let i = 1;
-                function visitNextNode() {
-                    if (i === this.getArray().length) {
-                        this.getArray()[i - 1].selectAll("circle").attr("fill", prevColor);
-                        clearInterval(interval);
-                    }
-                    else {
-                        prevNode.attr("fill", prevColor);
-                        let node = this.getArray()[i].selectAll("circle");
-                        let tempColor = node.attr("fill");
-                        node.attr("fill", "red");
-
-                        prevNode = node;
-                        prevColor = tempColor;
-                        i++;
-                    }
-                }
-            }
-
-            contains(g)
-            {
-                let radius = g.datum().r;
-                if (d3.event.x + radius > arrLeft && d3.event.x - radius < arrRight && d3.event.y - radius < arrBottom && d3.event.y + radius > arrTop )
-                {
-                    return true;
-                }
-            }
-
-            update()
-            {
-                let startingPos = (w / 2) - ((this.getArray().length - 1) * (r + arrNodePadding));
-                for (let i = 0; i < this.getArray().length; i++) {
-                    let x = startingPos + 2 * i * (r + arrNodePadding);
-                    let g = this.getArray()[i].transition()
-                        .duration(300)
-                        .attr("transform", "translate(" + (this.getArray()[i].datum().x = x) + "," + (this.getArray()[i].datum().y = arrYMiddle) + ")");
-                }
-            }
-
-            push(g) {
-                if (this.getGElements().indexOf(g.node()) === -1)
-                {
-                    this.getArray().push(g);
-                    this.getGElements().push(g.node())
-                }
-                this.update();
-            }
-        }
-
-        class Environment {
-            constructor()
-            {
-                //Keeps track of all the nodes
-                let data = [];
-                this.getData = function() { return data; };
-            }
-
-            dragStartEvent()
-            {
-                let g = d3.select(this).classed("dragging", true).raise();
-
-                let dragged = () =>
-                {
-                    g.attr("transform", function(d) {
-                        let coordinates = d3.mouse(d3.select("svg").node());
-                        return "translate(" + (d.x = coordinates[0]) + "," + (d.y = coordinates[1]) + ")";
-                    });
-                    if (gArray.contains(g))
-                    {
-                        d3.select(".array")
-                            .style("fill", "rgb(240, 240, 240)")
-                    }
-                    else if (d3.select(".array").style("fill") === "rgb(240, 240, 240)")
-                    {
-                        d3.select(".array")
-                            .style("fill", "none")
-                    }
-                };
-
-                let dragEnded = () =>
-                {
-                    g.classed("dragging", false);
-                    if (gArray.contains(g))
-                    {
-                        d3.select(".array")
-                            .style("fill", "none");
-                        if ((gArray.getArray().length + 1) * (r * 2 + arrNodePadding * 2) <= w - arrEncapWidth * 2) {
-                        // if not overflow
-                            gArray.push(g);
-                            if (gArray.getArray().length >= 1) {
-                                addSortButton(selectionSort);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        let removeFromArray = null;
-                        if ((removeFromArray = gArray.getGElements().indexOf(g.node())) !== -1)
-                        {
-                            gArray.getArray().splice(removeFromArray, 1);
-                            gArray.getGElements().splice(removeFromArray, 1);
-                            gArray.update();
-                        }
-                        if (gArray.getArray().length === 0 && button)
-                        {
-                            button.remove();
-                        }
-                    }
-                };
-
-                d3.event.on("drag", dragged)
-                    .on("end", dragEnded);
-
-            }
-
-            getNodes(tag)
-            {
-                return d3.select(tag)
-                    .selectAll(".nodes")
-                    .data(this.getData())
-                    .enter();
-            }
-
-            addNodeTo(tag) {
-                this.getData().push(new Node(d3.event.x, d3.event.y, r, Math.floor(Math.random() * 255)));
-                let nodes = this.getNodes(tag);
-                this.updateNodes(nodes);
-            }
-
-            updateNodes(nodes) {
-                let g = nodes.append("g")
-                    .classed("nodes", true)
-                    .call(d3.drag().on("start", this.dragStartEvent))
-                    .attr("transform", function(d) {
-                        return "translate(" + d.x + "," + d.y + ")"
-                    });
-
-                let node = g.append("circle")
-                    .attr("r", function(d) { return d.r } )
-                    .attr("fill", function(d) { return "rgb(" + (255 - d.value) + ", 255, 255)" } );
-
-                let text = g.append("text")
-                    .text(function(d) { return d.value })
-                    .attr("text-anchor", "middle")
-                    .attr("y", ".3em")
-                    .attr("font-size", function(d) {
-                        return fontSize - String(d.value).length * 6;
-                    });
-            }
-
-            updateArray(svg, data) {
-                let g = svg.append("g")
-                    .data(data)
-                    .attr("transform", function(d) {
-                        return "translate(" + arrPadding + "," + arrPadding + ")";
-                    });
-
-                let array = g.append("rect")
-                    .attr("width", w - arrPadding * 2)
-                    .attr("height", arrHeight)
-                    .classed("array", true)
-                    .style("stroke-dasharray", String(arrEncapWidth) + "," + String(arrSpacing) + "," + String(arrEncapWidth * 2 + arrHeight) + "," + String(arrSpacing) + "," + String(arrEncapWidth * 2 + arrHeight));
-            }
-        }
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.9.1/d3.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <script type="module">
+        import {Environment, addSortButton} from "./Environment.js";
+        import {dragStartEvent} from "./events.js";
+        import GraphicArray from "./GraphicArray.js";
+        import selectionSort from "./selectionsort.js";
 
         //Size of window
         const w = 1000;
@@ -302,102 +101,17 @@
 
         let fontSize = 64;
 
-        //Button is initialized null as it is not initialized on the screen on start
-        let button = null;
+        let gArray = new GraphicArray(w, r, arrLeft, arrTop, arrRight, arrBottom, arrNodePadding, arrYMiddle);
 
-        let gArray = new GraphicArray();
-        let environment = new Environment();
+        //package arr elements togetehr
+        let environment = new Environment(selectionSort, gArray, w, h, dragStartEvent, arrPadding, arrNodePadding, arrHeight, arrEncapWidth, r, fontSize, buttonWidth, buttonHeight);
 
-        let addSortButton = (sortAlgo) =>
-        {
-            let svg = d3.selectAll("svg");
-            let g = svg.append("g")
-                .attr("transform", "translate(" + (w / 2 - buttonWidth / 2) + "," + (h * 0.75) + ")")
-                .on("click", sortAlgo);
-            button = g;
-
-            let rect = g.append("rect")
-                .attr("width", buttonWidth)
-                .attr("height", buttonHeight)
-                .classed("actionButton", true);
-
-            let text = g.append("text")
-                .text("Selection Sort")
-                .attr("transform", "translate(" + (buttonWidth / 2) + "," + (buttonHeight / 2) + ")")
-                .attr("text-anchor", "middle")
-                .attr("y", ".3em")
-                .attr("font-size", (buttonWidth / 10) + "pt");
-        };
-
-        let selectionSort = () => {
-            let startIndex = 0;
-
-            selectionSortOnce();
-
-            function selectionSortOnce() {
-                if (startIndex === gArray.getArray().length - 1) {
-                    //Do nothing since at end
-                }
-                else {
-                    let minG = gArray.getArray()[startIndex];
-                    let minGIndex = startIndex;
-                    let currentMin = minG.datum().value;
-                    let minNode = prevNode = minG.selectAll("circle");
-                    let minNodeColor = minNode.attr("fill");
-                    let interval = setInterval(visitNextNode, 1000);
-                    let prevColor = prevNode.attr("fill");
-                    prevNode.attr("fill", "red");
-                    let i = startIndex + 1;
-
-                    function visitNextNode() {
-                        if (i === gArray.getArray().length) {
-                            gArray.getArray()[i - 1].selectAll("circle").attr("fill", prevColor);
-                            clearInterval(interval);
-                            let temp = gArray.getArray()[startIndex];
-                            gArray.getArray()[startIndex] = minG;
-                            gArray.getArray()[minGIndex] = temp;
-                            gArray.getGElements()[startIndex] = minG.node();
-                            gArray.getGElements()[minGIndex] = temp.node();
-                            minG.selectAll("circle").attr("fill", minNodeColor);
-                            gArray.update();
-                            startIndex += 1;
-                            selectionSortOnce();
-                        }
-                        else {
-                            prevNode.attr("fill", prevColor);
-
-                            let g = gArray.getArray()[i];
-
-                            if (g.datum().value < currentMin) {
-                                minNode.attr("fill", minNodeColor);
-                                currentMin = g.datum().value;
-                                minNode = g.selectAll("circle");
-                                minNodeColor = minNode.attr("fill");
-                                minG = g;
-                                minGIndex = i;
-                            }
-                            let node = g.selectAll("circle");
-                            let tempColor = node.attr("fill");
-                            node.attr("fill", "red");
-                            minNode.attr("fill", "yellow");
-
-                            prevNode = node;
-                            prevColor = tempColor;
-                            i++;
-                        }
-                    }
-                }
-            }
-        };
-
-
-        function initialize()
-        {
+        function initialize() {
             let svg = d3.select("body")
                 .append("svg")
                 .attr("width", w)
                 .attr("height", h)
-                .on("click", function () {
+                .on("click", function() {
                     if (d3.event.target === this) {
                         environment.addNodeTo("svg")
                     }
@@ -409,12 +123,14 @@
         }
 
         $(document).ready(function() {
-           initialize();
+            initialize();
         });
     </script>
     <title>d3.js</title>
 </head>
+
 <body>
 
 </body>
+
 </html>

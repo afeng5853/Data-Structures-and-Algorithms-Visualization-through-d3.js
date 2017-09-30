@@ -133,10 +133,9 @@
                 let startingPos = (w / 2) - ((this.getArray().length - 1) * (r + arrNodePadding));
                 for (let i = 0; i < this.getArray().length; i++) {
                     let x = startingPos + 2 * i * (r + arrNodePadding);
-                    let y = arrYMiddle;
                     let g = this.getArray()[i].transition()
                         .duration(300)
-                        .attr("transform", "translate(" + (this.getArray()[i].datum().x = x) + "," + (this.getArray()[i].datum().y = y) + ")");
+                        .attr("transform", "translate(" + (this.getArray()[i].datum().x = x) + "," + (this.getArray()[i].datum().y = arrYMiddle) + ")");
                 }
             }
 
@@ -149,6 +148,123 @@
                 this.update();
             }
         }
+
+        class Environment {
+            constructor()
+            {
+                //Keeps track of all the nodes
+                let data = [];
+                this.getData = function() { return data; };
+            }
+
+            dragStartEvent()
+            {
+                let g = d3.select(this).classed("dragging", true).raise();
+
+                let dragged = () =>
+                {
+                    g.attr("transform", function(d) {
+                        let coordinates = d3.mouse(d3.select("svg").node());
+                        return "translate(" + (d.x = coordinates[0]) + "," + (d.y = coordinates[1]) + ")";
+                    });
+                    if (gArray.contains(g))
+                    {
+                        d3.select(".array")
+                            .style("fill", "rgb(240, 240, 240)")
+                    }
+                    else if (d3.select(".array").style("fill") === "rgb(240, 240, 240)")
+                    {
+                        d3.select(".array")
+                            .style("fill", "none")
+                    }
+                };
+
+                let dragEnded = () =>
+                {
+                    g.classed("dragging", false);
+                    if (gArray.contains(g))
+                    {
+                        d3.select(".array")
+                            .style("fill", "none");
+                        if ((gArray.getArray().length + 1) * (r * 2 + arrNodePadding * 2) <= w - arrEncapWidth * 2) {
+                        // if not overflow
+                            gArray.push(g);
+                            if (gArray.getArray().length >= 1) {
+                                addSortButton(selectionSort);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        let removeFromArray = null;
+                        if ((removeFromArray = gArray.getGElements().indexOf(g.node())) !== -1)
+                        {
+                            gArray.getArray().splice(removeFromArray, 1);
+                            gArray.getGElements().splice(removeFromArray, 1);
+                            gArray.update();
+                        }
+                        if (gArray.getArray().length === 0 && button)
+                        {
+                            button.remove();
+                        }
+                    }
+                };
+
+                d3.event.on("drag", dragged)
+                    .on("end", dragEnded);
+
+            }
+
+            getNodes(tag)
+            {
+                return d3.select(tag)
+                    .selectAll(".nodes")
+                    .data(this.getData())
+                    .enter();
+            }
+
+            addNodeTo(tag) {
+                this.getData().push(new Node(d3.event.x, d3.event.y, r, Math.floor(Math.random() * 255)));
+                let nodes = this.getNodes(tag);
+                this.updateNodes(nodes);
+            }
+
+            updateNodes(nodes) {
+                let g = nodes.append("g")
+                    .classed("nodes", true)
+                    .call(d3.drag().on("start", this.dragStartEvent))
+                    .attr("transform", function(d) {
+                        return "translate(" + d.x + "," + d.y + ")"
+                    });
+
+                let node = g.append("circle")
+                    .attr("r", function(d) { return d.r } )
+                    .attr("fill", function(d) { return "rgb(" + (255 - d.value) + ", 255, 255)" } );
+
+                let text = g.append("text")
+                    .text(function(d) { return d.value })
+                    .attr("text-anchor", "middle")
+                    .attr("y", ".3em")
+                    .attr("font-size", function(d) {
+                        return fontSize - String(d.value).length * 6;
+                    });
+            }
+
+            updateArray(svg, data) {
+                let g = svg.append("g")
+                    .data(data)
+                    .attr("transform", function(d) {
+                        return "translate(" + arrPadding + "," + arrPadding + ")";
+                    });
+
+                let array = g.append("rect")
+                    .attr("width", w - arrPadding * 2)
+                    .attr("height", arrHeight)
+                    .classed("array", true)
+                    .style("stroke-dasharray", String(arrEncapWidth) + "," + String(arrSpacing) + "," + String(arrEncapWidth * 2 + arrHeight) + "," + String(arrSpacing) + "," + String(arrEncapWidth * 2 + arrHeight));
+            }
+        }
+
 
         //Size of window
         const w = 1000;
@@ -184,17 +300,36 @@
         //Radius of nodes
         let r = 50;
 
-        //Keeps track of all the nodes
-        let data = [];
-
         let fontSize = 64;
 
         //Button is initialized null as it is not initialized on the screen on start
         let button = null;
 
         let gArray = new GraphicArray();
+        let environment = new Environment();
 
-        function selectionSort() {
+        let addSortButton = (sortAlgo) =>
+        {
+            let svg = d3.selectAll("svg");
+            let g = svg.append("g")
+                .attr("transform", "translate(" + (w / 2 - buttonWidth / 2) + "," + (h * 0.75) + ")")
+                .on("click", sortAlgo);
+            button = g;
+
+            let rect = g.append("rect")
+                .attr("width", buttonWidth)
+                .attr("height", buttonHeight)
+                .classed("actionButton", true);
+
+            let text = g.append("text")
+                .text("Selection Sort")
+                .attr("transform", "translate(" + (buttonWidth / 2) + "," + (buttonHeight / 2) + ")")
+                .attr("text-anchor", "middle")
+                .attr("y", ".3em")
+                .attr("font-size", (buttonWidth / 10) + "pt");
+        };
+
+        let selectionSort = () => {
             let startIndex = 0;
 
             selectionSortOnce();
@@ -253,139 +388,8 @@
                     }
                 }
             }
-        }
+        };
 
-        function addButton(f)
-        {
-            let svg = d3.selectAll("svg");
-            let g = svg.append("g")
-                .attr("transform", "translate(" + (w / 2 - buttonWidth / 2) + "," + (h * 0.75) + ")")
-                .on("click", selectionSort);
-            button = g;
-
-            let rect = g.append("rect")
-                .attr("width", buttonWidth)
-                .attr("height", buttonHeight)
-                .classed("actionButton", true);
-
-            let text = g.append("text")
-                .text("Selection Sort")
-                .attr("transform", "translate(" + (buttonWidth / 2) + "," + (buttonHeight / 2) + ")")
-                .attr("text-anchor", "middle")
-                .attr("y", ".3em")
-                .attr("font-size", (buttonWidth / 10) + "pt");
-
-        }
-
-        function dragStarted()
-        {
-            let g = d3.select(this).classed("dragging", true).raise();
-
-            d3.event.on("drag", dragged)
-                .on("end", dragEnded);
-
-            function dragged()
-            {
-                g.attr("transform", function(d) {
-                    let coordinates = d3.mouse(d3.select("svg").node());
-                    return "translate(" + (d.x = coordinates[0]) + "," + (d.y = coordinates[1]) + ")";
-                });
-                if (gArray.contains(g))
-                {
-                    d3.select(".array")
-                        .style("fill", "rgb(240, 240, 240)")
-                }
-                else if (d3.select(".array").style("fill") == "rgb(240, 240, 240)")
-                {
-                    d3.select(".array")
-                        .style("fill", "none")
-                }
-            }
-
-            function dragEnded()
-            {
-                g.classed("dragging", false);
-                if (gArray.contains(g))
-                {
-                    d3.select(".array")
-                        .style("fill", "none");
-                    if ((gArray.getArray().length + 1) * (r * 2 + arrNodePadding * 2) > w - arrEncapWidth * 2)
-                    {
-                        //overflow
-                    }
-                    else
-                    {
-                        gArray.push(g);
-                        if (gArray.getArray().length >= 1)
-                        {
-                            addButton(selectionSort);
-                        }
-                    }
-                }
-                else
-                {
-                    let removeFromArray = null;
-                    if ((removeFromArray = gArray.getGElements().indexOf(g.node())) !== -1)
-                    {
-                        gArray.getArray().splice(removeFromArray, 1);
-                        gArray.getGElements().splice(removeFromArray, 1);
-                        gArray.update();
-                    }
-                    if (gArray.getArray().length === 0 && button)
-                    {
-                        button.remove();
-                    }
-                }
-            }
-        }
-
-        function addNodeToSvg()
-        {
-            data.push(new Node(d3.event.x, d3.event.y, r, Math.floor(Math.random() * 255)));
-            let nodes = d3.select("svg")
-                .selectAll(".nodes")
-                .data(data)
-                .enter();
-            updateNodes(nodes);
-        }
-
-        function updateNodes(nodes)
-        {
-            let g = nodes.append("g")
-                .classed("nodes", true)
-                .call(d3.drag().on("start", dragStarted))
-                .attr("transform", function(d) {
-                    return "translate(" + d.x + "," + d.y + ")"
-                });
-
-            let node = g.append("circle")
-                .attr("r", function(d) { return d.r } )
-                .attr("fill", function(d) { return "rgb(" + (255 - d.value) + ", 255, 255)" } );
-
-            let text = g.append("text")
-                .text(function(d) { return d.value })
-                .attr("text-anchor", "middle")
-                .attr("y", ".3em")
-                .attr("font-size", function(d) {
-                    return fontSize - String(d.value).length * 6;
-                });
-        }
-
-        function updateArray(svg, data)
-        {
-            let g = svg.append("g")
-                .data(data)
-                .attr("transform", function(d) {
-                    return "translate(" + arrPadding + "," + arrPadding + ")";
-                });
-
-            let array = g.append("rect")
-                .attr("width", w - arrPadding * 2)
-                .attr("height", arrHeight)
-                .classed("array", true)
-                .style("stroke-dasharray", String(arrEncapWidth) + "," + String(arrSpacing) + "," + String(arrEncapWidth * 2 + arrHeight) + "," + String(arrSpacing) + "," + String(arrEncapWidth * 2 + arrHeight) );
-
-        }
 
         function initialize()
         {
@@ -395,13 +399,13 @@
                 .attr("height", h)
                 .on("click", function () {
                     if (d3.event.target === this) {
-                        addNodeToSvg()
+                        environment.addNodeTo("svg")
                     }
                 });
 
             let nodes = svg.selectAll(".nodes");
 
-            updateArray(svg, [0]);
+            environment.updateArray(svg, [0]);
         }
 
         $(document).ready(function() {

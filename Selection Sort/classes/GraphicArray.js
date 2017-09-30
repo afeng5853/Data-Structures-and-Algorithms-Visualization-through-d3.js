@@ -74,6 +74,9 @@ export default class GraphicArray {
         }
     }
 
+    /**
+     * Updates the positions of the nodes on the graphical array
+     */
     update() {
         let startingPos = (this.getWidth() / 2) - ((this.getArray().length - 1) * (this.getNodeRadius() + this.getArrNodePadding()));
         for (let i = 0; i < this.getArray().length; i++) {

@@ -1,0 +1,53 @@
+svg {
+    border-style: solid;
+}
+
+g>circle {
+    stroke: black;
+    cursor: move;
+    cursor: grab;
+    cursor: -moz-grab;
+    cursor: -webkit-grab;
+}
+
+g>circle:active {
+    cursor: grabbing;
+    cursor: -moz-grabbing;
+    cursor: -webkit-grabbing;
+}
+
+g>circle+text {
+    font-family: sans-serif;
+    cursor: move;
+    cursor: grab;
+    cursor: -moz-grab;
+    cursor: -webkit-grab;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+g>text:active {
+    cursor: grabbing;
+    cursor: -moz-grabbing;
+    cursor: -webkit-grabbing;
+}
+
+g>rect {
+    fill: white;
+    stroke: black;
+    stroke-width: 10px;
+}
+
+.actionButton {
+    cursor: pointer;
+}
+
+.actionButton+text {
+    font-family: sans-serif;
+    cursor: pointer;
+}
+
+.dragging {
+    stroke-width: 7px;
+}

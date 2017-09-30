@@ -155,7 +155,7 @@ export let addSortButton = (sortAlgo, width, height, buttonWidth, buttonHeight) 
         .classed("actionButton", true);
 
     let text = g.append("text")
-        .text("Selection Sort")
+        .text("Quick Sort")
         .attr("transform", "translate(" + (buttonWidth / 2) + "," + (buttonHeight / 2) + ")")
         .attr("text-anchor", "middle")
         .attr("y", ".3em")

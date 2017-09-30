@@ -2,68 +2,14 @@
 <html lang="en">
 
 <head>
-    <style>
-        svg {
-            border-style: solid;
-        }
-
-        g>circle {
-            stroke: black;
-            cursor: move;
-            cursor: grab;
-            cursor: -moz-grab;
-            cursor: -webkit-grab;
-        }
-
-        g>circle:active {
-            cursor: grabbing;
-            cursor: -moz-grabbing;
-            cursor: -webkit-grabbing;
-        }
-
-        g>circle+text {
-            font-family: sans-serif;
-            cursor: move;
-            cursor: grab;
-            cursor: -moz-grab;
-            cursor: -webkit-grab;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-        }
-
-        g>text:active {
-            cursor: grabbing;
-            cursor: -moz-grabbing;
-            cursor: -webkit-grabbing;
-        }
-
-        g>rect {
-            fill: white;
-            stroke: black;
-            stroke-width: 10px;
-        }
-
-        .actionButton {
-            cursor: pointer;
-        }
-
-        .actionButton+text {
-            font-family: sans-serif;
-            cursor: pointer;
-        }
-
-        .dragging {
-            stroke-width: 7px;
-        }
-    </style>
+    <link rel="stylesheet" href="./css/main.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.9.1/d3.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
     <script type="module">
         import {Environment, addSortButton} from "./classes/SortEnvironment.js";
         import {dragStartEvent} from "./utils/events.js";
         import GraphicArray from "./classes/GraphicArray.js";
-        import selectionSort from "./utils/quicksort.js";
+        import quickSort from "./utils/quicksort.js";
 
         //Size of window
         const w = 1000;
@@ -102,9 +48,10 @@
         let fontSize = 64;
 
         let gArray = new GraphicArray(w, r, arrLeft, arrTop, arrRight, arrBottom, arrNodePadding, arrYMiddle);
+        console.log(gArray);
 
         //package arr elements togetehr
-        let environment = new Environment(selectionSort, gArray, w, h, dragStartEvent, arrPadding, arrNodePadding, arrHeight, arrEncapWidth, r, fontSize, buttonWidth, buttonHeight);
+        let environment = new Environment(quickSort, gArray, w, h, dragStartEvent, arrPadding, arrNodePadding, arrHeight, arrEncapWidth, r, fontSize, buttonWidth, buttonHeight);
 
         function initialize() {
             let svg = d3.select("body")

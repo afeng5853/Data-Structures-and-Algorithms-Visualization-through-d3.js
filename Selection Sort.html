@@ -72,33 +72,6 @@
             integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
             crossorigin="anonymous"></script>
     <script>
-        const w = 1000;
-        const h = 800;
-        const arrPadding = 50;
-        const arrHeight = 150;
-        const arrEncapWidth = 50;
-        const arrSpacing = w - arrEncapWidth * 2 - arrPadding * 2;
-        const arrLeft = arrPadding;
-        const arrRight = arrPadding + arrEncapWidth * 2 + (arrSpacing);
-        const arrTop = arrPadding;
-        const arrBottom = arrPadding + arrHeight;
-        const arrYMiddle = arrPadding + arrHeight / 2;
-        const arrTopLeftPos = [arrPadding, arrPadding];
-        const arrTopRightPos = [arrRight, arrPadding];
-        const arrBottomLeftPos = [arrPadding, arrPadding + arrHeight];
-        const arrBottomRightPos = [arrRight, arrPadding + arrHeight];
-        const arrNodePadding = 10;
-        const buttonWidth = 300;
-        const buttonHeight = 100;
-
-        var r = 50;
-        var graphicArray = [];
-        var graphicArrayGTag = [];
-        var graphicArrayLoc = [];
-        var data = [];
-        var fontSize = 64;
-        var button = null;
-
         class Node
         {
             constructor(x, y, r, value)
@@ -110,46 +83,155 @@
             }
         }
 
-        function selectionSort()
+        class GraphicArray
         {
-            var startIndex = 0;
+            constructor()
+            {
+                let array = [];
+                this.getArray = function() { return array; };
+
+                let gElements = [];
+                this.getGElements = function() { return gElements; };
+            }
+
+            iterate()
+            {
+                let interval = setInterval(visitNextNode, 1000);
+                let prevNode = gArray.getArray()[0].selectAll("circle");
+                let prevColor = prevNode.attr("fill");
+                prevNode.attr("fill", "red");
+                let i = 1;
+                function visitNextNode() {
+                    if (i === this.getArray().length) {
+                        this.getArray()[i - 1].selectAll("circle").attr("fill", prevColor);
+                        clearInterval(interval);
+                    }
+                    else {
+                        prevNode.attr("fill", prevColor);
+                        let node = this.getArray()[i].selectAll("circle");
+                        let tempColor = node.attr("fill");
+                        node.attr("fill", "red");
+
+                        prevNode = node;
+                        prevColor = tempColor;
+                        i++;
+                    }
+                }
+            }
+
+            contains(g)
+            {
+                let radius = g.datum().r;
+                if (d3.event.x + radius > arrLeft && d3.event.x - radius < arrRight && d3.event.y - radius < arrBottom && d3.event.y + radius > arrTop )
+                {
+                    return true;
+                }
+            }
+
+            update()
+            {
+                let startingPos = (w / 2) - ((this.getArray().length - 1) * (r + arrNodePadding));
+                for (let i = 0; i < this.getArray().length; i++) {
+                    let x = startingPos + 2 * i * (r + arrNodePadding);
+                    let y = arrYMiddle;
+                    let g = this.getArray()[i].transition()
+                        .duration(300)
+                        .attr("transform", "translate(" + (this.getArray()[i].datum().x = x) + "," + (this.getArray()[i].datum().y = y) + ")");
+                }
+            }
+
+            push(g) {
+                if (this.getGElements().indexOf(g.node()) === -1)
+                {
+                    this.getArray().push(g);
+                    this.getGElements().push(g.node())
+                }
+                this.update();
+            }
+        }
+
+        //Size of window
+        const w = 1000;
+        const h = 800;
+
+        //Defines the array's position
+        const arrPadding = 50;
+        const arrHeight = 150;
+        const arrEncapWidth = 50;
+
+        //Calculations of different point locations of the array
+        const arrSpacing = w - arrEncapWidth * 2 - arrPadding * 2;
+        const arrLeft = arrPadding;
+        const arrRight = arrPadding + arrEncapWidth * 2 + (arrSpacing);
+        const arrTop = arrPadding;
+        const arrBottom = arrPadding + arrHeight;
+        const arrYMiddle = arrPadding + arrHeight / 2;
+
+        /* If ever needed
+        const arrTopLeftPos = [arrPadding, arrPadding];
+        const arrTopRightPos = [arrRight, arrPadding];
+        const arrBottomLeftPos = [arrPadding, arrPadding + arrHeight];
+        const arrBottomRightPos = [arrRight, arrPadding + arrHeight];
+        */
+
+        //Spacing between each node
+        const arrNodePadding = 10;
+
+        //Size of button
+        const buttonWidth = 300;
+        const buttonHeight = 100;
+
+        //Radius of nodes
+        let r = 50;
+
+        //Keeps track of all the nodes
+        let data = [];
+
+        let fontSize = 64;
+
+        //Button is initialized null as it is not initialized on the screen on start
+        let button = null;
+
+        let gArray = new GraphicArray();
+
+        function selectionSort() {
+            let startIndex = 0;
+
             selectionSortOnce();
 
-            function selectionSortOnce()
-            {
-                if (startIndex === graphicArray.length - 1)
-                {
-                    return;
+            function selectionSortOnce() {
+                if (startIndex === gArray.getArray().length - 1) {
+                    //Do nothing since at end
                 }
                 else {
-                    var minG = graphicArray[startIndex];
-                    var minGIndex = startIndex;
-                    var currentMin = minG.datum().value;
-                    var minNode = prevNode = minG.selectAll("circle");
-                    var minNodeColor = minNode.attr("fill");
-                    var interval = setInterval(visitNextNode, 1000);
-                    var prevColor = prevNode.attr("fill");
+                    let minG = gArray.getArray()[startIndex];
+                    let minGIndex = startIndex;
+                    let currentMin = minG.datum().value;
+                    let minNode = prevNode = minG.selectAll("circle");
+                    let minNodeColor = minNode.attr("fill");
+                    let interval = setInterval(visitNextNode, 1000);
+                    let prevColor = prevNode.attr("fill");
                     prevNode.attr("fill", "red");
-                    var i = startIndex + 1;
-                    ;
+                    let i = startIndex + 1;
+
                     function visitNextNode() {
-                        if (i === graphicArray.length) {
-                            graphicArray[i - 1].selectAll("circle").attr("fill", prevColor);
+                        if (i === gArray.getArray().length) {
+                            gArray.getArray()[i - 1].selectAll("circle").attr("fill", prevColor);
                             clearInterval(interval);
-                            var temp = graphicArray[startIndex];
-                            graphicArray[startIndex] = minG;
-                            graphicArray[minGIndex] = temp;
-                            graphicArrayGTag[startIndex] = minG.node();
-                            graphicArrayGTag[minGIndex] = temp.node();
+                            let temp = gArray.getArray()[startIndex];
+                            gArray.getArray()[startIndex] = minG;
+                            gArray.getArray()[minGIndex] = temp;
+                            gArray.getGElements()[startIndex] = minG.node();
+                            gArray.getGElements()[minGIndex] = temp.node();
                             minG.selectAll("circle").attr("fill", minNodeColor);
-                            updateArrayNodes();
+                            gArray.update();
                             startIndex += 1;
                             selectionSortOnce();
                         }
                         else {
                             prevNode.attr("fill", prevColor);
 
-                            var g = graphicArray[i];
+                            let g = gArray.getArray()[i];
 
                             if (g.datum().value < currentMin) {
                                 minNode.attr("fill", minNodeColor);
@@ -159,8 +241,8 @@
                                 minG = g;
                                 minGIndex = i;
                             }
-                            var node = g.selectAll("circle");
-                            var tempColor = node.attr("fill");
+                            let node = g.selectAll("circle");
+                            let tempColor = node.attr("fill");
                             node.attr("fill", "red");
                             minNode.attr("fill", "yellow");
 
@@ -173,91 +255,20 @@
             }
         }
 
-
-        function iterateGraphicArray()
-        {
-            var interval = setInterval(visitNextNode, 1000);
-            var prevNode = graphicArray[0].selectAll("circle");
-            var prevColor = prevNode.attr("fill");
-            prevNode.attr("fill", "red");
-            var i = 1;
-            function visitNextNode()
-            {
-                if (i === graphicArray.length)
-                {
-                    graphicArray[i - 1].selectAll("circle").attr("fill", prevColor);
-                    clearInterval(interval);
-                }
-                else
-                {
-                    prevNode.attr("fill", prevColor);
-                    var node = graphicArray[i].selectAll("circle");
-                    var tempColor = node.attr("fill");
-                    node.attr("fill", "red");
-
-                    prevNode = node;
-                    prevColor = tempColor;
-                    i++;
-                }
-            }
-        }
-
-        function inGraphicArray(g)
-        {
-            var radius = g.datum().r;
-            if (d3.event.x + radius > arrLeft && d3.event.x - radius < arrRight && d3.event.y - radius < arrBottom && d3.event.y + radius > arrTop )
-            {
-                return true;
-            }
-        }
-
-        function updateArrayNodes()
-        {
-            var startingPos = (w / 2) - ((graphicArray.length - 1) * (r + arrNodePadding));
-            for (var i = 0; i < graphicArray.length; i++) {
-                var x = startingPos + 2 * i * (r + arrNodePadding);
-                var y = arrYMiddle;
-                graphicArrayLoc[i] = [x, y];
-                var g = graphicArray[i].transition()
-                    .duration(300)
-                    .attr("transform", "translate(" + (graphicArray[i].datum().x = x) + "," + (graphicArray[i].datum().y = y) + ")");
-            }
-        }
-
-        function updateArrayNodeRadius()
-        {
-            for (var i = 0; i < graphicArray.length; i++)
-            {
-                graphicArray[i].datum().r = r;
-                graphicArray[i].selectAll("circle")
-                    .attr("r", r);
-            }
-        }
-
-        function pushToGraphicArray(g)
-        {
-            if (graphicArrayGTag.indexOf(g.node()) === -1)
-            {
-                graphicArray.push(g);
-                graphicArrayGTag.push(g.node())
-            }
-            updateArrayNodes();
-        }
-
         function addButton(f)
         {
-            var svg = d3.selectAll("svg");
-            var g = svg.append("g")
+            let svg = d3.selectAll("svg");
+            let g = svg.append("g")
                 .attr("transform", "translate(" + (w / 2 - buttonWidth / 2) + "," + (h * 0.75) + ")")
                 .on("click", selectionSort);
             button = g;
 
-            var rect = g.append("rect")
+            let rect = g.append("rect")
                 .attr("width", buttonWidth)
                 .attr("height", buttonHeight)
                 .classed("actionButton", true);
 
-            var text = g.append("text")
+            let text = g.append("text")
                 .text("Selection Sort")
                 .attr("transform", "translate(" + (buttonWidth / 2) + "," + (buttonHeight / 2) + ")")
                 .attr("text-anchor", "middle")
@@ -268,7 +279,7 @@
 
         function dragStarted()
         {
-            var g = d3.select(this).classed("dragging", true).raise();
+            let g = d3.select(this).classed("dragging", true).raise();
 
             d3.event.on("drag", dragged)
                 .on("end", dragEnded);
@@ -276,10 +287,10 @@
             function dragged()
             {
                 g.attr("transform", function(d) {
-                    var coordinates = d3.mouse(d3.select("svg").node());
+                    let coordinates = d3.mouse(d3.select("svg").node());
                     return "translate(" + (d.x = coordinates[0]) + "," + (d.y = coordinates[1]) + ")";
                 });
-                if (inGraphicArray(g))
+                if (gArray.contains(g))
                 {
                     d3.select(".array")
                         .style("fill", "rgb(240, 240, 240)")
@@ -294,18 +305,18 @@
             function dragEnded()
             {
                 g.classed("dragging", false);
-                if (inGraphicArray(g))
+                if (gArray.contains(g))
                 {
                     d3.select(".array")
                         .style("fill", "none");
-                    if ((graphicArray.length + 1) * (r * 2 + arrNodePadding * 2) > w - arrEncapWidth * 2)
+                    if ((gArray.getArray().length + 1) * (r * 2 + arrNodePadding * 2) > w - arrEncapWidth * 2)
                     {
                         //overflow
                     }
                     else
                     {
-                        pushToGraphicArray(g);
-                        if (graphicArray.length >= 1)
+                        gArray.push(g);
+                        if (gArray.getArray().length >= 1)
                         {
                             addButton(selectionSort);
                         }
@@ -313,14 +324,14 @@
                 }
                 else
                 {
-                    var removeFromArray = null;
-                    if ((removeFromArray = graphicArrayGTag.indexOf(g.node())) !== -1)
+                    let removeFromArray = null;
+                    if ((removeFromArray = gArray.getGElements().indexOf(g.node())) !== -1)
                     {
-                        graphicArray.splice(removeFromArray, 1);
-                        graphicArrayGTag.splice(removeFromArray, 1);
-                        updateArrayNodes();
+                        gArray.getArray().splice(removeFromArray, 1);
+                        gArray.getGElements().splice(removeFromArray, 1);
+                        gArray.update();
                     }
-                    if (graphicArray.length === 0 && button)
+                    if (gArray.getArray().length === 0 && button)
                     {
                         button.remove();
                     }
@@ -331,7 +342,7 @@
         function addNodeToSvg()
         {
             data.push(new Node(d3.event.x, d3.event.y, r, Math.floor(Math.random() * 255)));
-            var nodes = d3.select("svg")
+            let nodes = d3.select("svg")
                 .selectAll(".nodes")
                 .data(data)
                 .enter();
@@ -340,18 +351,18 @@
 
         function updateNodes(nodes)
         {
-            var g = nodes.append("g")
+            let g = nodes.append("g")
                 .classed("nodes", true)
                 .call(d3.drag().on("start", dragStarted))
                 .attr("transform", function(d) {
                     return "translate(" + d.x + "," + d.y + ")"
                 });
 
-            var node = g.append("circle")
+            let node = g.append("circle")
                 .attr("r", function(d) { return d.r } )
                 .attr("fill", function(d) { return "rgb(" + (255 - d.value) + ", 255, 255)" } );
 
-            var text = g.append("text")
+            let text = g.append("text")
                 .text(function(d) { return d.value })
                 .attr("text-anchor", "middle")
                 .attr("y", ".3em")
@@ -362,13 +373,13 @@
 
         function updateArray(svg, data)
         {
-            var g = svg.append("g")
+            let g = svg.append("g")
                 .data(data)
                 .attr("transform", function(d) {
                     return "translate(" + arrPadding + "," + arrPadding + ")";
-                })
+                });
 
-            var array = g.append("rect")
+            let array = g.append("rect")
                 .attr("width", w - arrPadding * 2)
                 .attr("height", arrHeight)
                 .classed("array", true)
@@ -378,7 +389,7 @@
 
         function initialize()
         {
-            var svg = d3.select("body")
+            let svg = d3.select("body")
                 .append("svg")
                 .attr("width", w)
                 .attr("height", h)
@@ -388,7 +399,7 @@
                     }
                 });
 
-            var nodes = svg.selectAll(".nodes");
+            let nodes = svg.selectAll(".nodes");
 
             updateArray(svg, [0]);
         }

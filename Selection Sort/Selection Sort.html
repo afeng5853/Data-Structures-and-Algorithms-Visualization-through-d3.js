@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <style>
+        svg {
+            border-style: solid;
+        }
+
+        g>circle {
+            stroke: black;
+            cursor: move;
+            cursor: grab;
+            cursor: -moz-grab;
+            cursor: -webkit-grab;
+        }
+
+        g>circle:active {
+            cursor: grabbing;
+            cursor: -moz-grabbing;
+            cursor: -webkit-grabbing;
+        }
+
+        g>circle+text {
+            font-family: sans-serif;
+            cursor: move;
+            cursor: grab;
+            cursor: -moz-grab;
+            cursor: -webkit-grab;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        g>text:active {
+            cursor: grabbing;
+            cursor: -moz-grabbing;
+            cursor: -webkit-grabbing;
+        }
+
+        g>rect {
+            fill: white;
+            stroke: black;
+            stroke-width: 10px;
+        }
+
+        .actionButton {
+            cursor: pointer;
+        }
+
+        .actionButton+text {
+            font-family: sans-serif;
+            cursor: pointer;
+        }
+
+        .dragging {
+            stroke-width: 7px;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.9.1/d3.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <script type="module">
+        import {Environment, addSortButton} from "./classes/SortEnvironment.js";
+        import {dragStartEvent} from "./utils/events.js";
+        import GraphicArray from "./classes/GraphicArray.js";
+        import selectionSort from "./utils/selectionsort.js";
+
+        //Size of window
+        const w = 1000;
+        const h = 800;
+
+        //Defines the array's position
+        const arrPadding = 50;
+        const arrHeight = 150;
+        const arrEncapWidth = 50;
+
+        //Calculations of different point locations of the array
+        const arrSpacing = w - arrEncapWidth * 2 - arrPadding * 2;
+        const arrLeft = arrPadding;
+        const arrRight = arrPadding + arrEncapWidth * 2 + (arrSpacing);
+        const arrTop = arrPadding;
+        const arrBottom = arrPadding + arrHeight;
+        const arrYMiddle = arrPadding + arrHeight / 2;
+
+        /* If ever needed
+        const arrTopLeftPos = [arrPadding, arrPadding];
+        const arrTopRightPos = [arrRight, arrPadding];
+        const arrBottomLeftPos = [arrPadding, arrPadding + arrHeight];
+        const arrBottomRightPos = [arrRight, arrPadding + arrHeight];
+        */
+
+        //Spacing between each node
+        const arrNodePadding = 10;
+
+        //Size of button
+        const buttonWidth = 300;
+        const buttonHeight = 100;
+
+        //Radius of nodes
+        let r = 50;
+
+        let fontSize = 64;
+
+        let gArray = new GraphicArray(w, r, arrLeft, arrTop, arrRight, arrBottom, arrNodePadding, arrYMiddle);
+
+        //package arr elements togetehr
+        let environment = new Environment(selectionSort, gArray, w, h, dragStartEvent, arrPadding, arrNodePadding, arrHeight, arrEncapWidth, r, fontSize, buttonWidth, buttonHeight);
+
+        function initialize() {
+            let svg = d3.select("body")
+                .append("svg")
+                .attr("width", w)
+                .attr("height", h)
+                .on("click", function() {
+                    if (d3.event.target === this) {
+                        environment.addNodeTo("svg")
+                    }
+                });
+
+            let nodes = svg.selectAll(".nodes");
+
+            environment.updateArray(svg, [0]);
+        }
+
+        $(document).ready(function() {
+            initialize();
+        });
+    </script>
+    <title>d3.js</title>
+</head>
+
+<body>
+
+</body>
+
+</html>

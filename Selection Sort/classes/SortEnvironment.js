@@ -1,4 +1,4 @@
-import Node from "./Node.js";
+import Node from "./NodeClass.js";
 
 export class Environment {
     constructor(sortAlgo, graphicArray, width, height, dragStartEvent, arrPadding, arrNodePadding, arrHeight, arrEncapWidth, nodeRadius, fontSize, buttonWidth, buttonHeight) {

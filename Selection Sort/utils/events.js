@@ -1,4 +1,4 @@
-import {addSortButton} from "./Environment.js"
+import {addSortButton} from "../classes/SortEnvironment.js"
 
 let button = null;
 

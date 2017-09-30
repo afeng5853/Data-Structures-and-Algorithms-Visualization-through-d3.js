@@ -1,7 +1,7 @@
 import Node from "./NodeClass.js";
 
 export class Environment {
-    constructor(sortAlgo, graphicArray, width, height, dragStartEvent, arrPadding, arrNodePadding, arrHeight, arrEncapWidth, nodeRadius, fontSize, buttonWidth, buttonHeight) {
+    constructor(sortAlgo, graphicArray, width, height, dragStartEvent, arrPadding, arrNodePadding, arrHeight, arrEncapWidth, nodeRadius, fontSize, buttonText, buttonWidth, buttonHeight) {
         //Keeps track of all the nodes
         let data = [];
 
@@ -81,7 +81,7 @@ export class Environment {
 
 
         this.getDragStartEvent = function() {
-            return function () { dragStartEvent(this, function() { return sortAlgo(graphicArray) }, graphicArray, nodeRadius, arrNodePadding, width, height, arrEncapWidth, buttonWidth, buttonHeight) };
+            return function () { dragStartEvent(this, function() { return sortAlgo(graphicArray) }, graphicArray, nodeRadius, arrNodePadding, width, height, arrEncapWidth, buttonText, buttonWidth, buttonHeight) };
         };
     }
 
@@ -142,7 +142,7 @@ export class Environment {
     }
 }
 
-export let addSortButton = (sortAlgo, width, height, buttonWidth, buttonHeight) => {
+export let addSortButton = (buttonText, sortAlgo, width, height, buttonWidth, buttonHeight) => {
     let svg = d3.selectAll("svg");
     let g = svg.append("g")
         .attr("transform", "translate(" + (width / 2 - buttonWidth / 2) + "," + (height * 0.75) + ")")
@@ -155,7 +155,7 @@ export let addSortButton = (sortAlgo, width, height, buttonWidth, buttonHeight) 
         .classed("actionButton", true);
 
     let text = g.append("text")
-        .text("Quick Sort")
+        .text(buttonText)
         .attr("transform", "translate(" + (buttonWidth / 2) + "," + (buttonHeight / 2) + ")")
         .attr("text-anchor", "middle")
         .attr("y", ".3em")

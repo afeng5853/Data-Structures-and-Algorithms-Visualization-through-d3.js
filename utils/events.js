@@ -2,7 +2,7 @@ import {addSortButton} from "../classes/SortEnvironment.js"
 
 let button = null;
 
-export function dragStartEvent(self, sortingAlgo, graphicArray, nodeRadius, arrNodePadding, width, height, arrEncapWidth, buttonWidth, buttonHeight) {
+export function dragStartEvent(self, sortingAlgo, graphicArray, nodeRadius, arrNodePadding, width, height, arrEncapWidth, buttonText, buttonWidth, buttonHeight) {
     let g = d3.select(self).classed("dragging", true).raise();
 
     let dragged = () => {
@@ -28,7 +28,7 @@ export function dragStartEvent(self, sortingAlgo, graphicArray, nodeRadius, arrN
                 // if not overflow
                 graphicArray.push(g);
                 if (graphicArray.getArray().length >= 1) {
-                    button = addSortButton(sortingAlgo, width, height, buttonWidth, buttonHeight);
+                    button = addSortButton(buttonText, sortingAlgo, width, height, buttonWidth, buttonHeight);
                 }
             }
         } else {

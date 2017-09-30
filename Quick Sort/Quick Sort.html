@@ -6,9 +6,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.9.1/d3.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
     <script type="module">
-        import {Environment, addSortButton} from "./classes/SortEnvironment.js";
-        import {dragStartEvent} from "./utils/events.js";
-        import GraphicArray from "./classes/GraphicArray.js";
+        import {Environment, addSortButton} from "../classes/SortEnvironment.js";
+        import {dragStartEvent} from "../utils/events.js";
+        import GraphicArray from "../classes/GraphicArray.js";
         import quickSort from "./utils/quicksort.js";
 
         //Size of window
@@ -38,6 +38,7 @@
         //Spacing between each node
         const arrNodePadding = 10;
 
+        const buttonText = "Quick Sort";
         //Size of button
         const buttonWidth = 300;
         const buttonHeight = 100;
@@ -51,7 +52,7 @@
         console.log(gArray);
 
         //package arr elements togetehr
-        let environment = new Environment(quickSort, gArray, w, h, dragStartEvent, arrPadding, arrNodePadding, arrHeight, arrEncapWidth, r, fontSize, buttonWidth, buttonHeight);
+        let environment = new Environment(quickSort, gArray, w, h, dragStartEvent, arrPadding, arrNodePadding, arrHeight, arrEncapWidth, r, fontSize, buttonText, buttonWidth, buttonHeight);
 
         function initialize() {
             let svg = d3.select("body")

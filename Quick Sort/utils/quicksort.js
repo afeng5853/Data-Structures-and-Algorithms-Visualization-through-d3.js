@@ -1,3 +1,5 @@
+import {partitionLeftLine, partitionRightLine} from "../../utils/partition.js"
+
 export default async function quickSort(graphicArray) {
     let startIndex = 0;
     let partitionIndex = graphicArray.getArray().length - 1;
@@ -25,7 +27,6 @@ export default async function quickSort(graphicArray) {
                                 [A[i + 1], A[hi]] = [A[hi], A[i + 1]];
                                 graphicArray.update();
                             }
-                            console.log(i, j);
                             resolve(i + 1);
                         } else {
                             let currentNode = A[j].selectAll("circle");
@@ -52,15 +53,16 @@ export default async function quickSort(graphicArray) {
     };
 
     let quickSort_ = async (A, lo, hi) => {
+        d3.selectAll("rect.partitionLine").remove();
         if (lo < hi) {
+            console.log(lo,hi);
+            partitionLeftLine(A, lo);
+            partitionRightLine(A, hi);
             let p = await partition(A, lo, hi);
-            console.log(p);
             await quickSort_(A, lo, p-1);
             quickSort_(A, p+1, hi);
         }
     };
 
     await quickSort_(graphicArray.getArray(), startIndex, partitionIndex);
-    console.log("test");
-    //graphicArray.update();
 }

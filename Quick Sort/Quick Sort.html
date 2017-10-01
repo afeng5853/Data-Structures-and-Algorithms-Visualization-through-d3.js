@@ -49,8 +49,6 @@
         let fontSize = 64;
 
         let gArray = new GraphicArray(w, r, arrLeft, arrTop, arrRight, arrBottom, arrNodePadding, arrYMiddle);
-        console.log(gArray);
-
         //package arr elements togetehr
         let environment = new Environment(quickSort, gArray, w, h, dragStartEvent, arrPadding, arrNodePadding, arrHeight, arrEncapWidth, r, fontSize, buttonText, buttonWidth, buttonHeight);
 
@@ -62,6 +60,7 @@
                 .on("click", function() {
                     if (d3.event.target === this) {
                         environment.addNodeTo("svg")
+
                     }
                 });
 
